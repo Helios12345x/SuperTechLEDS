@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Automation Section</title>
+<link href="https://fonts.googleapis.com" rel="preconnect" />
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- tokens (pulled from the real Droid stylesheet) ---------- */
+  :root{
+    --ink:#00060b;          /* --_color---primary-text-color */
+    --muted:#636871;        /* --_color---footer-menu */
+    --border:#dadfe6;       /* --_color---page-border */
+    --line:#ededed;         /* --_color---automation-border */
+    --bg:#f8fafc;           /* --_color---body */
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Inter",Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    font-size:16px;
+    line-height:120%;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .container{
+    width:100%;
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  .spacer{
+    height:50vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#9aa1ac;
+    font-size:14px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+
+  .overflow-hidden{overflow:hidden;}
+
+  /* ---------- automation section (original image animation) ---------- */
+
+  .automation-wrapper{
+    padding:65px 0;
+  }
+
+  .automation-wrap{
+    display:flex;
+    justify-content:space-between;
+    gap:60px;
+    margin-top:60px;
+    position:relative;
+  }
+
+  /* left: 4 stacked illustration layers, each sticks a little later
+     than the one before it — as you scroll past, each card slides
+     up and away while the next one settles into its sticky spot */
+  .automation-left-wrap{
+    display:flex;
+    flex-flow:column;
+    gap:200px;
+    position:relative;
+    flex:1 1 55%;
+    min-width:0;
+  }
+
+  .feature-image-one,
+  .feature-image-two,
+  .feature-image-three,
+  .feature-image-four{
+    width:100%;
+    display:block;
+    position:sticky;
+  }
+  .feature-image-one{top:150px;}
+  .feature-image-two{top:165px;}
+  .feature-image-three{top:180px;}
+  .feature-image-four{top:195px;}
+
+  .automation-right-wrap{
+    flex:1 1 45%;
+    max-width:583px;
+    display:flex;
+    flex-flow:column;
+    position:relative;
+  }
+
+  .automation-sticky-wrap{
+    position:sticky;
+    top:150px;
+  }
+
+  /* the heading + paragraph stack in the same spot and crossfade
+     to match whichever image is currently sticky/in-view */
+  .automation-copy{
+    position:relative;
+    min-height:150px;
+  }
+
+  .automation-step-copy{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1);
+    pointer-events:none;
+  }
+  .automation-step-copy.is-active{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+  .automation-step-copy:first-child{
+    position:relative; /* reserves height so .automation-copy isn't 0px before JS runs */
+  }
+
+  .automation-title{
+    font-size:24px;
+    line-height:120%;
+    letter-spacing:0;
+    max-width:395px;
+    margin:0 0 12px;
+    color:var(--ink);
+  }
+
+  .automation-description{
+    color:var(--muted);
+    font-size:16px;
+    letter-spacing:-1px;
+    line-height:150%;
+    margin:0;
+    max-width:420px;
+  }
+
+  /* compact step indicator — lights up in sync with the active image */
+  .automation-steps-wrap{
+    display:flex;
+    gap:28px;
+    margin-top:56px;
+    border-top:1px solid var(--border);
+    padding-top:24px;
+  }
+
+  .automation-step{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    opacity:.35;
+    transition:opacity .4s ease;
+  }
+  .automation-step.is-active{
+    opacity:1;
+  }
+
+  .automation-step-bar{
+    width:100%;
+    height:2px;
+    background:var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .automation-step-bar::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:var(--ink);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .4s ease;
+  }
+  .automation-step.is-active .automation-step-bar::after{
+    transform:scaleX(1);
+  }
+
+  .automation-icon-wrap{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+  }
+
+  .automation-icon{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+
+  @media screen and (max-width:900px){
+    .automation-wrap{
+      flex-direction:column;
+      gap:40px;
+    }
+    .automation-left-wrap,
+    .automation-right-wrap{
+      max-width:100%;
+      flex:1 1 auto;
+    }
+    .feature-image-one,
+    .feature-image-two,
+    .feature-image-three,
+    .feature-image-four,
+    .automation-sticky-wrap{
+      position:relative;
+      top:auto;
+    }
+    .automation-left-wrap{
+      gap:15px;
+    }
+    .automation-copy{ min-height:0; }
+    .automation-step-copy{
+      position:relative;
+      inset:auto;
+      opacity:1;
+      transform:none;
+      display:none;
+    }
+    .automation-step-copy.is-active{
+      display:block;
+    }
+    .automation-steps-wrap{
+      gap:16px;
+      margin-top:28px;
+    }
+    .automation-step{
+      opacity:1;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="spacer">scroll down ↓</div>
+
+<section class="automation-wrapper">
+  <div class="container">
+    <div class="automation-wrap">
+
+      <div class="automation-left-wrap">
+        <img
+          src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f603e1d92032fe4973b3ab_Feature04.png"
+          loading="lazy"
+          data-step="0"
+          alt="Automation Card Image"
+          class="feature-image-one" />
+
+        <img
+          src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f603e2a8b8b44db3c7f673_Feature03.png"
+          loading="lazy"
+          data-step="1"
+          alt="Automation Card Image"
+          class="feature-image-two" />
+
+        <img
+          src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f603e145cd7f64e0e5b840_Feature02.png"
+          loading="lazy"
+          data-step="2"
+          alt="Automation Card Image"
+          class="feature-image-three" />
+
+        <img
+          src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f603e2d3f975d87714d189_Feature01.png"
+          loading="lazy"
+          data-step="3"
+          alt="Automation Card Image"
+          class="feature-image-four" />
+      </div>
+
+      <div class="automation-right-wrap">
+        <div class="automation-sticky-wrap">
+
+          <div class="automation-copy">
+            <div class="automation-step-copy is-active" data-step="0">
+              <h2 class="automation-title">Automate the busywork.</h2>
+              <p class="automation-description">Automates manual tasks instantly — save hours every day so your team can focus on what actually matters.</p>
+            </div>
+            <div class="automation-step-copy" data-step="1">
+              <h2 class="automation-title">Works with your whole stack.</h2>
+              <p class="automation-description">Integrates with your favorite tools — connect apps seamlessly, no complex setup required.</p>
+            </div>
+            <div class="automation-step-copy" data-step="2">
+              <h2 class="automation-title">Gets smarter over time.</h2>
+              <p class="automation-description">AI learns and improves workflows — smarter automation over time, tailored to how your team works.</p>
+            </div>
+            <div class="automation-step-copy" data-step="3">
+              <h2 class="automation-title">Built to scale with you.</h2>
+              <p class="automation-description">Boosts efficiency as your team scales — from startup to enterprise, without missing a beat.</p>
+            </div>
+          </div>
+
+          <div class="automation-steps-wrap">
+
+            <div class="automation-step is-active" data-step="0">
+              <div class="automation-step-bar"></div>
+              <div class="automation-icon-wrap">
+                <img src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f60bd2476f239ddd76e3c4_Documents-1.svg" loading="lazy" alt="Automation Icon" class="automation-icon" />
+              </div>
+            </div>
+
+            <div class="automation-step" data-step="1">
+              <div class="automation-step-bar"></div>
+              <div class="automation-icon-wrap">
+                <img src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f60bd29030bffba0cf9f6c_Documents-2.svg" loading="lazy" alt="Automation Icon" class="automation-icon" />
+              </div>
+            </div>
+
+            <div class="automation-step" data-step="2">
+              <div class="automation-step-bar"></div>
+              <div class="automation-icon-wrap">
+                <img src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f60bd24db26ec44300e0ab_Documents-3.svg" loading="lazy" alt="Automation Icon" class="automation-icon" />
+              </div>
+            </div>
+
+            <div class="automation-step" data-step="3">
+              <div class="automation-step-bar"></div>
+              <div class="automation-icon-wrap">
+                <img src="https://cdn.prod.website-files.com/68e683ffec12767b0f54fa4b/68f60bd25d6f0f92301e66bc_Documents-4.svg" loading="lazy" alt="Automation Icon" class="automation-icon" />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="spacer">end of section ↑</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- text stays in sync with whichever image is currently closest
+  //      to the viewport's vertical center. Recalculated continuously
+  //      on every scroll (not threshold-crossing events), so it works
+  //      identically scrolling down OR back up — the images keep
+  //      their original sticky slide-up-and-away animation untouched. ----
+  var images = document.querySelectorAll(".automation-left-wrap [data-step]");
+  var copies = document.querySelectorAll(".automation-step-copy[data-step]");
+  var steps = document.querySelectorAll(".automation-step[data-step]");
+  var currentStep = "0";
+
+  function setActive(step){
+    if(step === currentStep) return;
+    currentStep = step;
+    copies.forEach(function(copy){
+      copy.classList.toggle("is-active", copy.dataset.step === step);
+    });
+    steps.forEach(function(el){
+      el.classList.toggle("is-active", el.dataset.step === step);
+    });
+  }
+
+  function updateActiveFromScroll(){
+    var viewportCenter = window.innerHeight / 2;
+    var closestStep = null;
+    var closestDistance = Infinity;
+
+    images.forEach(function(img){
+      var rect = img.getBoundingClientRect();
+      var imgCenter = rect.top + rect.height / 2;
+      var distance = Math.abs(imgCenter - viewportCenter);
+      if(distance < closestDistance){
+        closestDistance = distance;
+        closestStep = img.dataset.step;
+      }
+    });
+
+    if(closestStep !== null){
+      setActive(closestStep);
+    }
+  }
+
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function(){
+      updateActiveFromScroll();
+      ticking = false;
+    });
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  updateActiveFromScroll();
+})();
+</script>
+
+</body>
+</html>
